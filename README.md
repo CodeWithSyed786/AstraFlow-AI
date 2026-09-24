@@ -26,7 +26,7 @@ AstraFlow AI is a focused AI developer workspace for turning coding problems int
 - Vite
 - CSS
 - Express for local API development
-- Google Gemini API
+- Google Gemini Interactions API
 - Vercel deployment
 - GitHub Actions
 
@@ -36,7 +36,7 @@ Create a local `.env` from `.env.example`:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MODEL=gemini-3.6-flash
 PORT=8787
 ```
 
