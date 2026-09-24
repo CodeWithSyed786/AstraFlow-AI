@@ -10,6 +10,9 @@ function App() {
   const [prompt, setPrompt] = useState("");
   const [active, setActive] = useState("Workspace");
   const [copied, setCopied] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const response = useMemo(() => {
     if (!prompt.trim()) return null;
@@ -19,9 +22,31 @@ function App() {
     };
   }, [prompt]);
 
+  async function runAnalysis() {
+    if (!prompt.trim() || loading) return;
+    setLoading(true);
+    setError("");
+    setAnswer("");
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI request failed.");
+      setAnswer(data.text);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI request failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function copyResponse() {
-    if (!response) return;
-    await navigator.clipboard?.writeText(response.body);
+    const text = answer || response?.body;
+    if (!text) return;
+    await navigator.clipboard?.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   }
@@ -64,7 +89,7 @@ function App() {
           <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe a bug, feature, idea, or coding problem..." />
           <div className="composer-foot">
             <div className="tools"><button>＋ Attach</button><button>⌁ Context</button><button>⌘ Model</button></div>
-            <button className="send" onClick={() => setPrompt(prompt.trim())}>Run analysis <span>↗</span></button>
+            <button className="send" onClick={runAnalysis} disabled={loading}>{loading ? "Thinking..." : "Run analysis"} <span>↗</span></button>
           </div>
         </section>
 
@@ -78,10 +103,12 @@ function App() {
         ) : (
           <section className="response-card">
             <div className="response-head"><div><span className="mini-label">ASTRAFLOW</span><h3>{response.title}</h3></div><button onClick={copyResponse}>{copied ? "Copied" : "Copy"}</button></div>
-            <p>{response.body}</p>
+            <p>{answer || response.body}</p>
             <div className="response-tags"><span>Reasoning</span><span>Frontend</span><span>Actionable</span></div>
           </section>
         )}
+
+        {error && <div className="error-card">{error}</div>}
 
         <footer><span>AstraFlow AI</span><span>React · TypeScript · Vite</span><span>Built by CodeWithSyed786</span></footer>
       </main>
