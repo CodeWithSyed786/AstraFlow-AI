@@ -236,7 +236,7 @@ function App() {
                   <button className={contextMode ? "tool-active" : ""} onClick={() => setContextMode(!contextMode)}>
                     ⌁ Context {contextMode ? "On" : "Off"}
                   </button>
-                  <button onClick={() => setError("AstraFlow currently uses Gemini 2.5 Flash for fast developer responses.")}>◉ Gemini 2.5 Flash</button>
+                  <button onClick={() => setError("AstraFlow currently uses Gemini 3.6 Flash for fast developer responses.")}>◉ Gemini 3.6 Flash</button>
                   <input
                     ref={fileRef}
                     type="file"
