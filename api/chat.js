@@ -30,10 +30,26 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: data?.error?.message || "The AI provider returned an error." });
     }
 
-    const text = data?.output_text?.trim() ||
-      data?.output?.filter((item) => item.type === "text").map((item) => item.text || "").join("").trim();
+    const text =
+      data?.output_text?.trim() ||
+      data?.steps
+        ?.filter((step) => step.type === "model_output")
+        ?.flatMap((step) => step.content || [])
+        ?.filter((item) => item.type === "text")
+        ?.map((item) => item.text || "")
+        ?.join("")
+        ?.trim() ||
+      data?.output
+        ?.filter((item) => item.type === "text")
+        ?.map((item) => item.text || "")
+        ?.join("")
+        ?.trim();
 
-    if (!text) return res.status(502).json({ error: "The AI returned an empty response." });
+    if (!text) {
+      console.error("Gemini returned no text output:", JSON.stringify(data));
+      return res.status(502).json({ error: "The AI returned no readable text. Please try again." });
+    }
+
     return res.status(200).json({ text, model });
   } catch (error) {
     console.error("AstraFlow AI error:", error);
