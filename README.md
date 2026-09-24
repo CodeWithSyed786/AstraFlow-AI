@@ -1,76 +1,78 @@
 # ✦ AstraFlow AI
 
-> **Think clearly. Build faster.**
+> **Think clearly. Build brilliantly.**
 
-AstraFlow AI is a focused, modern developer workspace concept built with React, TypeScript and Vite. It is designed around a simple idea: coding tools should help developers move from **problem → reasoning → action** without adding unnecessary noise.
+AstraFlow AI is a focused AI developer workspace for turning coding problems into practical next steps. It combines a premium frontend workspace with a server-side Gemini integration for debugging, explanations, implementation planning and developer productivity.
 
-### What it does
+## ✨ What AstraFlow does
 
-- 🧠 Turns coding questions into structured implementation thinking
-- 🐛 Provides a dedicated space for debugging and technical explanations
-- ⚡ Keeps common developer actions inside one lightweight workspace
-- 🧩 Uses a component-first React architecture
-- 📱 Responsive UI for desktop and smaller screens
-- 🔐 Prepared for future AI/API integration without hard-coding secrets
+- 🤖 Ask Gemini developer-focused questions
+- 🐛 Debug React, JavaScript and TypeScript problems
+- 🧠 Turn feature ideas into implementation plans
+- 📎 Attach text/code files locally for review
+- 💾 Keep recent conversations in browser history
+- 📋 Copy AI answers and reusable snippets
+- 📱 Responsive premium workspace UI
+- 🔐 Keep the Gemini API key server-side
 
-### Current MVP
+## 🚀 Live
 
-The first version focuses on the **frontend product experience**:
+**Web app:** https://astra-flow-ai.vercel.app/
 
-- Workspace navigation
-- AI prompt composer
-- Quick-start developer prompts
-- Interactive response state
-- Copy response interaction
-- Responsive dark developer interface
-- Lightweight animated visual identity
+## 🛠️ Stack
 
-The AI response layer is now connected to a secure local Express API. The API keeps the Gemini key on the server instead of exposing it in the React bundle.
-
-### Tech Stack
-
-- React
+- React 19
 - TypeScript
 - Vite
 - CSS
+- Express for local API development
+- Google Gemini API
+- Vercel deployment
 - GitHub Actions
 
-### Run locally
+## 🔐 Environment variables
+
+Create a local `.env` from `.env.example`:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+PORT=8787
+```
+
+Never commit `.env`. For Vercel, add `GEMINI_API_KEY` and optionally `GEMINI_MODEL` under Project Settings → Environment Variables.
+
+## 💻 Run locally
 
 ```bash
 npm install
+```
 
-# Terminal 1 — start the AI API
+Terminal 1:
+
+```bash
 npm run server
+```
 
-# Terminal 2 — start the frontend
+Terminal 2:
+
+```bash
 npm run dev
 ```
 
-Before running the AI locally, copy `.env.example` to `.env` and add your Gemini API key. Never commit `.env`.
+Open the Vite URL shown in your terminal.
 
-Create a production build:
+## 🧩 Product direction
 
-```bash
-npm run build
-```
+AstraFlow is intentionally being built as a practical developer workspace rather than a generic chatbot. Planned areas include project-aware context, codebase analysis, refactoring assistance, Git/GitHub workflows, safe AI tooling and productivity analytics.
 
-### Product direction
+## 👨‍💻 Builder
 
-AstraFlow is intended to evolve toward an AI-assisted developer environment with features such as:
+**Syed Eman — Frontend Developer • React Developer • AI-Assisted Builder**
 
-1. Code explanation and debugging
-2. Project-aware context
-3. Refactoring suggestions
-4. Implementation planning
-5. Git/GitHub workflow assistance
-6. Safe AI API integration
-7. Developer productivity analytics
+GitHub: https://github.com/CodeWithSyed786  
+Portfolio: https://code-with-syed-573ac.web.app/
 
-### Why this project?
+## 📄 License
 
-This project is part of my journey as a **Frontend Developer and AI-Assisted Builder**. The goal is not to make another generic chatbot UI, but to explore how AI can become part of a practical developer workflow.
-
-Built by **Syed Eman — CodeWithSyed786**.
-
-[GitHub Profile](https://github.com/CodeWithSyed786) · [Portfolio](https://code-with-syed-573ac.web.app/)
+MIT
