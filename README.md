@@ -25,7 +25,7 @@ The first version focuses on the **frontend product experience**:
 - Responsive dark developer interface
 - Lightweight animated visual identity
 
-The AI response layer is intentionally represented as an MVP interaction. A production model provider can be connected later through a secure server/API layer.
+The AI response layer is now connected to a secure local Express API. The API keeps the Gemini key on the server instead of exposing it in the React bundle.
 
 ### Tech Stack
 
@@ -39,8 +39,15 @@ The AI response layer is intentionally represented as an MVP interaction. A prod
 
 ```bash
 npm install
+
+# Terminal 1 — start the AI API
+npm run server
+
+# Terminal 2 — start the frontend
 npm run dev
 ```
+
+Before running the AI locally, copy `.env.example` to `.env` and add your Gemini API key. Never commit `.env`.
 
 Create a production build:
 
