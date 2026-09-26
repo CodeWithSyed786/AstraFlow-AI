@@ -36,6 +36,7 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [contextMode, setContextMode] = useState(false);
+  const [agentMode, setAgentMode] = useState(false);
   const [attachedFile, setAttachedFile] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -72,10 +73,10 @@ function App() {
     setSubmittedPrompt(prompt.trim());
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(agentMode ? "/api/agent" : "/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt.trim() }),
+        body: JSON.stringify({ prompt: prompt.trim(), mode: agentMode ? "agent" : "chat" }),
       });
       const data = await res.json();
 
@@ -236,6 +237,9 @@ function App() {
                   <button className={contextMode ? "tool-active" : ""} onClick={() => setContextMode(!contextMode)}>
                     ⌁ Context {contextMode ? "On" : "Off"}
                   </button>
+                  <button className={agentMode ? "tool-active" : ""} onClick={() => setAgentMode(!agentMode)}>
+                    ✦ Agent {agentMode ? "On" : "Off"}
+                  </button>
                   <button onClick={() => setError("AstraFlow currently uses Gemini 3.6 Flash for fast developer responses.")}>◉ Gemini 3.6 Flash</button>
                   <input
                     ref={fileRef}
@@ -251,6 +255,7 @@ function App() {
               </div>
               {attachedFile && <div className="attachment">Attached locally: <b>{attachedFile}</b></div>}
               {contextMode && <div className="context-note">Project context mode is enabled for this workspace.</div>}
+              {agentMode && <div className="agent-note">Agent Mode: Astra will structure the task as Plan → Implementation → Verification.</div>}
             </section>
 
             {submittedPrompt && answer && (
@@ -263,7 +268,7 @@ function App() {
                   <button onClick={() => copyResponse()}>{copied ? "Copied ✓" : "Copy"}</button>
                 </div>
                 <div className="answer">{answer}</div>
-                <div className="response-tags"><span>Gemini</span><span>Frontend</span><span>Actionable</span></div>
+                <div className="response-tags"><span>Gemini</span><span>{agentMode ? "Agent Mode" : "Frontend"}</span><span>{agentMode ? "Plan → Fix → Verify" : "Actionable"}</span></div>
               </section>
             )}
 
