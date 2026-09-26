@@ -76,3 +76,5 @@ button{cursor:pointer}
 footer{display:flex;justify-content:space-between;color:#8296aa;font-size:9px;margin-top:46px;padding:0 3px 8px}
 @media(max-width:850px){.sidebar{width:210px}.main{padding:26px 25px}.hero{padding:55px 15px 40px}.orb-wrap{width:180px}.orb-ring{display:none}.orb{width:120px;height:120px}.suggestion-grid,.snippet-grid{grid-template-columns:1fr}.project-grid{grid-template-columns:1fr}}
 @media(max-width:680px){.sidebar{display:none}.main{padding:20px 14px}.top-actions .live-badge{display:none}.hero{padding:46px 4px 30px}.hero h2{font-size:48px}.hero-stats{gap:13px}.orb-wrap{display:none}.workspace-card{padding:15px}.composer-foot{align-items:flex-end;flex-direction:column}.tools{width:100%}.send{width:100%}.panel-page{padding:42px 2px 15px}.page-intro h2{font-size:38px}.history-item{grid-template-columns:1fr}.history-item small{grid-column:1}footer{gap:8px;flex-wrap:wrap}}
+
+.agent-note{margin-top:10px;padding:9px 11px;border-radius:8px;background:#f4f0ff;color:#7050a8;font-size:9px;border:1px solid #e4d8ff}.tools button.tool-active{font-weight:750;box-shadow:inset 0 0 0 1px #b9dcfa}
