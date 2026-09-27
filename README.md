@@ -12,6 +12,7 @@ AstraFlow AI is a focused AI developer workspace for turning coding problems int
 - 📎 Attach text/code files locally for review
 - 💾 Keep recent conversations in browser history
 - 📋 Copy AI answers and reusable snippets
+- 🔁 Retry failed AI requests without retyping
 - 📱 Responsive premium workspace UI
 - 🔐 Keep the Gemini API key server-side
 
@@ -71,7 +72,7 @@ AstraFlow is intentionally being built as a practical developer workspace rather
 **Syed Eman — Frontend Developer • React Developer • AI-Assisted Builder**
 
 GitHub: https://github.com/CodeWithSyed786  
-Portfolio: https://code-with-syed-573ac.web.app/
+Portfolio: https://code-with-syed.vercel.app/
 
 ## 📄 License
 
