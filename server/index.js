@@ -14,7 +14,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.post("/api/chat", async (req, res) => {
-  const { prompt } = req.body ?? {};
+  const { prompt, context = "" } = req.body ?? {};
   if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
     return res.status(400).json({ error: "A prompt is required." });
   }
@@ -28,7 +28,10 @@ app.post("/api/chat", async (req, res) => {
       headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
       body: JSON.stringify({
         model,
-        input: prompt.trim(),
+        input: [
+          prompt.trim(),
+          typeof context === "string" && context.trim() ? "\nATTACHED PROJECT CONTEXT:\n" + context.slice(0, 18000) : ""
+        ].join("\n"),
         system_instruction:
           "You are AstraFlow, a practical AI developer assistant. Help with frontend development, React, TypeScript, JavaScript, debugging, architecture and implementation planning. Be concise, actionable and honest."
       })
