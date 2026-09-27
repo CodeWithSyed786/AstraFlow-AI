@@ -33,6 +33,7 @@ function App() {
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [failedPrompt, setFailedPrompt] = useState("");
   const [copied, setCopied] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [contextMode, setContextMode] = useState(false);
@@ -60,23 +61,26 @@ function App() {
     setAnswer("");
     setSubmittedPrompt("");
     setError("");
+    setFailedPrompt("");
     setAttachedFile("");
     setActive("Workspace");
   }
 
-  async function runAnalysis() {
-    if (!prompt.trim() || loading) return;
+  async function runAnalysis(requestPrompt = prompt) {
+    const cleanPrompt = requestPrompt.trim();
+    if (!cleanPrompt || loading) return;
 
     setLoading(true);
     setError("");
+    setFailedPrompt("");
     setAnswer("");
-    setSubmittedPrompt(prompt.trim());
+    setSubmittedPrompt(cleanPrompt);
 
     try {
       const res = await fetch(agentMode ? "/api/agent" : "/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt.trim(), mode: agentMode ? "agent" : "chat" }),
+        body: JSON.stringify({ prompt: cleanPrompt, mode: agentMode ? "agent" : "chat" }),
       });
       const data = await res.json();
 
@@ -88,12 +92,13 @@ function App() {
       setAnswer(text);
       saveHistory({
         id: Date.now(),
-        prompt: prompt.trim(),
+        prompt: cleanPrompt,
         answer: text,
         createdAt: new Date().toLocaleString(),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI request failed.");
+      setFailedPrompt(cleanPrompt);
     } finally {
       setLoading(false);
     }
@@ -240,7 +245,7 @@ function App() {
                   <button className={agentMode ? "tool-active" : ""} onClick={() => setAgentMode(!agentMode)}>
                     ✦ Agent {agentMode ? "On" : "Off"}
                   </button>
-                  <button onClick={() => setError("AstraFlow currently uses Gemini 3.6 Flash for fast developer responses.")}>◉ Gemini 3.6 Flash</button>
+                  <button onClick={() => setError("AstraFlow currently uses Gemini 3.8 Flash for fast developer responses.")}>◉ Gemini 3.8 Flash</button>
                   <input
                     ref={fileRef}
                     type="file"
@@ -249,7 +254,7 @@ function App() {
                     onChange={(e) => handleFile(e.target.files?.[0])}
                   />
                 </div>
-                <button className="send" onClick={runAnalysis} disabled={loading || !prompt.trim()}>
+                <button className="send" onClick={() => runAnalysis()} disabled={loading || !prompt.trim()}>
                   {loading ? "Thinking..." : "Run analysis"} <span>↗</span>
                 </button>
               </div>
@@ -285,7 +290,16 @@ function App() {
               </section>
             )}
 
-            {error && <div className="error-card">⚠ {error}</div>}
+            {error && (
+              <div className="error-card" role="alert">
+                <span>⚠ {error}</span>
+                {failedPrompt && (
+                  <button className="retry-button" onClick={() => runAnalysis(failedPrompt)} disabled={loading}>
+                    Retry
+                  </button>
+                )}
+              </div>
+            )}
           </>
         )}
 
