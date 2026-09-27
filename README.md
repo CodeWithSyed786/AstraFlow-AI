@@ -36,7 +36,7 @@ Create a local `.env` from `.env.example`:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-3.6-flash
+GEMINI_MODEL=gemini-3.8-flash
 PORT=8787
 ```
 
