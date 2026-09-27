@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 
   if (!apiKey) {
     return res.status(503).json({ error: "AI is not configured. Add GEMINI_API_KEY in Vercel Environment Variables." });
