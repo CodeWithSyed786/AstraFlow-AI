@@ -39,6 +39,7 @@ function App() {
   const [contextMode, setContextMode] = useState(false);
   const [agentMode, setAgentMode] = useState(false);
   const [attachedFile, setAttachedFile] = useState("");
+  const [attachedContext, setAttachedContext] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ function App() {
     setError("");
     setFailedPrompt("");
     setAttachedFile("");
+    setAttachedContext("");
     setActive("Workspace");
   }
 
@@ -80,7 +82,11 @@ function App() {
       const res = await fetch(agentMode ? "/api/agent" : "/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: cleanPrompt, mode: agentMode ? "agent" : "chat" }),
+        body: JSON.stringify({
+          prompt: cleanPrompt,
+          mode: agentMode ? "agent" : "chat",
+          context: contextMode ? attachedContext : "",
+        }),
       });
       const data = await res.json();
 
@@ -128,11 +134,8 @@ function App() {
     const text = await file.text();
     const clipped = text.slice(0, 12000);
     setAttachedFile(file.name);
-    setPrompt((current) =>
-      current
-        ? current
-        : `Review this file and suggest useful improvements:\n\n${clipped}`
-    );
+    setAttachedContext(clipped);
+    setPrompt((current) => current || `Review the attached project context and suggest useful improvements.`);
   }
 
   const navItems = [
@@ -259,7 +262,7 @@ function App() {
                 </button>
               </div>
               {attachedFile && <div className="attachment">Attached locally: <b>{attachedFile}</b></div>}
-              {contextMode && <div className="context-note">Project context mode is enabled for this workspace.</div>}
+              {contextMode && <div className="context-note">Project context mode is enabled{attachedFile ? ` — ${attachedFile} is included with this request.` : " — attach a code/text file to give Astra real project context."}</div>}
               {agentMode && <div className="agent-note">Agent Mode: Astra will structure the task as Plan → Implementation → Verification.</div>}
             </section>
 
