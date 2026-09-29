@@ -124,11 +124,6 @@ function App() {
         window.clearTimeout(timeoutId);
       }
 
-      return;
-
-      const text = data.text?.trim();
-      if (!text) throw new Error("The AI returned an empty response.");
-
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI request failed.");
       setFailedPrompt(cleanPrompt);
