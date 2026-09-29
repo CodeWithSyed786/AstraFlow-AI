@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import { runAgentTeam } from "./agent-team.js";
 
 dotenv.config();
 
@@ -63,54 +64,13 @@ app.post("/api/chat", async (req, res) => {
 
 
 app.post("/api/agent", async (req, res) => {
-  const { prompt, context = "", mode = "agent" } = req.body ?? {};
-  if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
-    return res.status(400).json({ error: "A task is required." });
-  }
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(503).json({ error: "AI is not configured. Add GEMINI_API_KEY to your local .env file." });
-  }
-
-  const task = prompt.trim();
-  const contextText = typeof context === "string" ? context.slice(0, 18000) : "";
-
+  const { prompt, context = "" } = req.body ?? {};
+  if (!prompt || typeof prompt !== "string" || !prompt.trim()) return res.status(400).json({ error: "A task is required." });
   try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
-      body: JSON.stringify({
-        model,
-        input: [
-          "TASK:",
-          task,
-          contextText ? "\nATTACHED PROJECT CONTEXT:\n" + contextText : "",
-          "\nOPERATING MODE: " + mode
-        ].join("\n"),
-        system_instruction:
-          "You are AstraFlow Agent, a practical software-engineering agent. Work in three explicit stages: PLAN, IMPLEMENTATION, VERIFICATION. First identify the root problem and exact steps. Then provide concrete code or file-level changes the developer can apply. Finally verify the approach with tests, edge cases, and a rollback note. Never claim you changed a real file or ran a real test unless the system actually gave you that tool. Be concise, technical, and actionable."
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      return res.status(response.status).json({ error: data?.error?.message || "The AI provider returned an error." });
-    }
-
-    const text =
-      data?.output_text?.trim() ||
-      data?.steps
-        ?.filter((step) => step.type === "model_output")
-        ?.flatMap((step) => step.content || [])
-        ?.filter((item) => item.type === "text")
-        ?.map((item) => item.text || "")
-        ?.join("")
-        ?.trim();
-
-    if (!text) return res.status(502).json({ error: "The agent returned no readable result. Please try again." });
-    res.json({ text, model, mode: "agent" });
+    return res.status(200).json(await runAgentTeam({ prompt, context }));
   } catch (error) {
-    console.error("AstraFlow Agent error:", error);
-    res.status(500).json({ error: "Could not reach the AI service." });
+    console.error("AstraFlow Manager error:", error);
+    return res.status(503).json({ error: error.message || "The manager could not complete the team run." });
   }
 });
 
