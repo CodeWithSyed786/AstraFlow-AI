@@ -79,29 +79,56 @@ function App() {
     setSubmittedPrompt(cleanPrompt);
 
     try {
-      const res = await fetch(agentMode ? "/api/agent" : "/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: cleanPrompt,
-          mode: agentMode ? "agent" : "chat",
-          context: contextMode ? attachedContext : "",
-        }),
-      });
-      const data = await res.json();
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 30000);
 
-      if (!res.ok) throw new Error(data.error || "AI request failed.");
+      try {
+        const res = await fetch(agentMode ? "/api/agent" : "/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: cleanPrompt,
+            mode: agentMode ? "agent" : "chat",
+            context: contextMode ? attachedContext : "",
+          }),
+          signal: controller.signal,
+        });
+
+        const raw = await res.text();
+        let data: { error?: string; text?: string } = {};
+        try {
+          data = raw ? JSON.parse(raw) : {};
+        } catch {
+          throw new Error("The AI service returned an invalid response. Please try again.");
+        }
+
+        if (!res.ok) {
+          throw new Error(data.error || `AI request failed (HTTP ${res.status}).`);
+        }
+
+        const text = data.text?.trim();
+        if (!text) throw new Error("The AI returned an empty response. Please try again.");
+        setAnswer(text);
+        saveHistory({
+          id: Date.now(),
+          prompt: cleanPrompt,
+          answer: text,
+          createdAt: new Date().toLocaleString(),
+        });
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          throw new Error("The AI request timed out after 30 seconds. Please try again.");
+        }
+        throw err;
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+
+      return;
 
       const text = data.text?.trim();
       if (!text) throw new Error("The AI returned an empty response.");
 
-      setAnswer(text);
-      saveHistory({
-        id: Date.now(),
-        prompt: cleanPrompt,
-        answer: text,
-        createdAt: new Date().toLocaleString(),
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI request failed.");
       setFailedPrompt(cleanPrompt);
@@ -236,6 +263,7 @@ function App() {
                 onKeyDown={(e) => {
                   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") runAnalysis();
                 }}
+                aria-label="Describe a bug, feature, idea, or coding problem"
                 placeholder="Describe a bug, feature, idea, or coding problem..."
               />
 
