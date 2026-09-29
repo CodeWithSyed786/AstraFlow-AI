@@ -38,6 +38,7 @@ function App() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [contextMode, setContextMode] = useState(false);
   const [agentMode, setAgentMode] = useState(false);
+  const [agentRun, setAgentRun] = useState<any>(null);
   const [attachedFile, setAttachedFile] = useState("");
   const [attachedContext, setAttachedContext] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -65,6 +66,7 @@ function App() {
     setFailedPrompt("");
     setAttachedFile("");
     setAttachedContext("");
+    setAgentRun(null);
     setActive("Workspace");
   }
 
@@ -92,7 +94,24 @@ function App() {
 
       if (!res.ok) throw new Error(data.error || "AI request failed.");
 
-      const text = data.text?.trim();
+      let text = data.text?.trim() || "";
+      if (agentMode) {
+        setAgentRun(data);
+        if (data.status === "needs_clarification") {
+          text = "Manager needs clarification:\n\n" + (data.plan?.clarificationQuestions || []).map((q: string, i: number) => (i + 1) + ". " + q).join("\n");
+        } else {
+          const f = data.final || {};
+          text = [
+            f.summary,
+            f.execution?.length ? "EXECUTION\n" + f.execution.map((x: string) => "• " + x).join("\n") : "",
+            f.decisions?.length ? "DECISIONS\n" + f.decisions.map((x: string) => "• " + x).join("\n") : "",
+            f.issues?.length ? "ISSUES\n" + f.issues.map((x: string) => "• " + x).join("\n") : "",
+            f.strategy?.length ? "STRATEGY\n" + f.strategy.map((x: string) => "• " + x).join("\n") : "",
+            f.nextSteps?.length ? "NEXT STEPS\n" + f.nextSteps.map((x: string) => "• " + x).join("\n") : "",
+            f.qaStatus ? "QA STATUS: " + f.qaStatus : ""
+          ].filter(Boolean).join("\n\n");
+        }
+      }
       if (!text) throw new Error("The AI returned an empty response.");
 
       setAnswer(text);
@@ -143,6 +162,7 @@ function App() {
     { label: "Projects", icon: "▦" },
     { label: "Snippets", icon: "◇" },
     { label: "History", icon: "◷" },
+    { label: "Agent Team", icon: "✦" },
   ];
 
   return (
@@ -246,7 +266,7 @@ function App() {
                     ⌁ Context {contextMode ? "On" : "Off"}
                   </button>
                   <button className={agentMode ? "tool-active" : ""} onClick={() => setAgentMode(!agentMode)}>
-                    ✦ Agent {agentMode ? "On" : "Off"}
+                    ✦ Manager {agentMode ? "On" : "Off"}
                   </button>
                   <button onClick={() => setError("AstraFlow currently uses Gemini 3.8 Flash for fast developer responses.")}>◉ Gemini 3.8 Flash</button>
                   <input
@@ -263,7 +283,7 @@ function App() {
               </div>
               {attachedFile && <div className="attachment">Attached locally: <b>{attachedFile}</b></div>}
               {contextMode && <div className="context-note">Project context mode is enabled{attachedFile ? ` — ${attachedFile} is included with this request.` : " — attach a code/text file to give Astra real project context."}</div>}
-              {agentMode && <div className="agent-note">Agent Mode: Astra will structure the task as Plan → Implementation → Verification.</div>}
+              {agentMode && <div className="agent-note">Manager Mode: Manager → Specialist Team → Manager verification. You only talk to the Manager.</div>}
             </section>
 
             {submittedPrompt && answer && (
@@ -277,6 +297,21 @@ function App() {
                 </div>
                 <div className="answer">{answer}</div>
                 <div className="response-tags"><span>Gemini</span><span>{agentMode ? "Agent Mode" : "Frontend"}</span><span>{agentMode ? "Plan → Fix → Verify" : "Actionable"}</span></div>
+              </section>
+            )}
+
+            {agentRun?.agents?.length > 0 && (
+              <section className="agent-activity">
+                <div className="section-title"><span>TEAM ACTIVITY</span><small>Manager orchestration</small></div>
+                <div className="agent-grid">
+                  {agentRun.agents.map((agent: any) => (
+                    <article className="agent-card" key={agent.id}>
+                      <div className="agent-card-top"><span className="agent-avatar">✦</span><span className={agent.status === "completed" ? "agent-status done" : "agent-status"}>{agent.status}</span></div>
+                      <strong>{agent.name}</strong>
+                      <small>{agent.provider ? agent.provider + " · " + agent.model : agent.result}</small>
+                    </article>
+                  ))}
+                </div>
               </section>
             )}
 
@@ -330,6 +365,26 @@ function App() {
                   <div className="snippet-head"><h3>{snippet.title}</h3><button onClick={() => copyResponse(snippet.code)}>Copy</button></div>
                   <pre>{snippet.code}</pre>
                 </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {active === "Agent Team" && (
+          <section className="panel-page">
+            <div className="page-intro"><span className="mini-label">ASTRAFLOW ORCHESTRATION</span><h2>Agent Team</h2><p>One Manager coordinates specialist agents and returns a verified strategy.</p></div>
+            <div className="agent-grid team-page">
+              {[
+                ["Manager Agent","Owns the objective, clarification, planning, delegation and final synthesis."],
+                ["Research Agent","Technology, docs, APIs, alternatives and constraints."],
+                ["Developer Agent","React, TypeScript, backend, architecture and implementation strategy."],
+                ["UI/UX Designer Agent","Flows, responsive UI, accessibility and interaction states."],
+                ["Strategy Agent","Priorities, milestones, risks, resources and roadmap."],
+                ["Content Agent","README, product copy, UX copy and launch content."],
+                ["Security Agent","Secrets, auth, validation, injection and data safety."],
+                ["QA Agent","Requirements, edge cases, regressions and verification."]
+              ].map(([name,desc]) => (
+                <article className="agent-card" key={name}><div className="agent-card-top"><span className="agent-avatar">✦</span><span className="agent-status done">READY</span></div><strong>{name}</strong><small>{desc}</small></article>
               ))}
             </div>
           </section>
